@@ -294,7 +294,7 @@ public class MiBand {
             @Override
             public void onNotify(byte[] data) {
                 Log.d(TAG, Arrays.toString(data));
-                if (data.length == 2 && data[0] == 6) {
+                if (data.length == 2 && (data[0] == 6 || data[0] == 0)) {
                     int heartRate = data[1] & 0xFF;
                     listener.onNotify(heartRate);
                 }
