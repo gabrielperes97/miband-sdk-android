@@ -164,6 +164,8 @@ miband.setNormalNotifyListener(new NotifyListener() {
 
 ```
 
+### Coleta de dados sobre passos
+
 ```java
 
 // Obter notificação de número de passos em tempo real, configurar, 
