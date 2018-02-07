@@ -79,7 +79,7 @@ miband.setDisconnectedListener(new NotifyListener(){
 
 ```java
 // Defini dados do usuário
-UserInfo userInfo = new UserInfo(20111111, 1, 32, 180, 55, "胖梁", 0);
+UserInfo userInfo = new UserInfo(20111111, 1, 31, 174, 80, "Gustavo Diniz", 0);
 miband.setUserInfo(userInfo);
 
 ```
