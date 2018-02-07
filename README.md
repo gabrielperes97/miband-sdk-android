@@ -1,257 +1,240 @@
-# 停止维护
-
-非常抱歉! 因为官方app的'协议'不停的变动, 我自己本身又没有使用这个sdk的需求, 加上最近也比较忙, 所以不打算维护了. 
-如果你还是想继续捣鼓sdk, 可以参考我的一篇笔记 和 一个反编译的工程 对新版app的协议进行研究.
-
-[小米手环协议研究](http://www.zhaoxiaodan.com/android/%E5%B0%8F%E7%B1%B3%E6%89%8B%E7%8E%AF%E8%93%9D%E7%89%99%E5%8D%8F%E8%AE%AE%E7%A0%94%E7%A9%B6.html)
-
-[小米app反编译工程](https://github.com/pangliang/xiaomi-health-app-decompile)
+# MiBand SDK (traduzido para o Português)
 
 
-## 当前测试通过固件版本
 
-小米运动app:
+SDK para integração com a pulseira MiBand e MiBand 2 ajustados para o português. Esta SDK é utilizada no projeto Pro-Treino para integração das pulseiras Xiaomi.
 
-- ios版本: 1.3.57
-- android: 1.8.711
+[Link do SDK original (não é mais suportado)](https://github.com/pangliang/miband-sdk-android)
 
-普通版:(MI)
+[Link do App Pro-Treino no Google Play](https://play.google.com/store/apps/details?id=com.startjob.pro_treino)
 
-- 固件版本: 4.16.11.7
+[Acesse o site do Pro-Treino para mais informações](https://www.pro-treino.com)
 
-心率版(MI1S)
+## Release notes
 
-- 固件版本: 4.15.12.10
-- 心率版本: 1.3.74.64
-
-##使用
-
-在项目的`build.gradle`文件的依赖部分添加:
-
-```
-compile 'com.zhaoxiaodan.miband:miband-sdk:1.1.2'
-```
-
-## Release Notes
-
-### 1.1.2 - 2016-02-22
-
-- 修复setUserInfo导致的蓝牙断开问题. 当设置的`userid`跟之前设置的不一样时, 手环会闪动并震动, 这个时候需要拍一下手环, 就像官方app配对时一样;当设置的userid跟之前一样时 手环无反应;
-- 获取心跳扫描之前, 必须做setUserInfo 操作
-
-### 1.1.1 - 2016-02-03
-
-- 支持获取心跳扫描数据
-
-### 1.0.1 - 2015-11-20
-
-- 扫描附近的Le设备, 附近存在多个手环时可以选择连接
-- 添加设备断开监听器
-- 连接之后无需再setUserInfo也可以使用, 并且setUserInfo 会导致心跳版手环断开连接, 待修复
-- 修复震动问题, 现在有三种震动模式:三灯亮震2次, 无灯震2次, 中间灯震10次; 震动时可随时使用stop停止
-- 重力感应数据不可用
-- 心跳版好像是单色led灯, 无法设置led颜色; 原版可以
-
-### 1.0.0 - 2015-08-17
-
-- 获取动力感应器数据
-- 设置用户信息
-- 获取实时步数通知
-- 震动手环
-- 设置led颜色
-- 获取电池信息
-- 获取信号强度RSSI值信息
+- 1.1.3 (Pro-Treino) 
+    - Atualização do gradle (agora usa o 2.3.3)
+    - Ajuste no método para coleta de batimentos cardíacos na MiBand 2
+- Demais notas verificar branch original
 
 ## API
 
+### Escanear e descobrir dispositivos
+
 ```java
 
-// 实例化
+// instancia singleton
 MiBand miband = new MiBand(context);
 
-// 扫描附近的设备
-final ScanCallback scanCallback = new ScanCallback()
-{
-	@Override
-	public void onScanResult(int callbackType, ScanResult result)
-	{
-		BluetoothDevice device = result.getDevice();
-		Log.d(TAG,
-				“找到附近的蓝牙设备: name:” + device.getName() + “,uuid:”
-						+ device.getUuids() + “,add:”
-						+ device.getAddress() + “,type:”
-						+ device.getType() + “,bondState:”
-						+ device.getBondState() + “,rssi:” + result.getRssi());
-		// 根据情况展示
-	}
+// procura por dispositivos perto
+final ScanCallback scanCallback = new ScanCallback(){
+    @Override
+    public void onScanResult(int callbackType, ScanResult result){
+	    BluetoothDevice device = result.getDevice();
+	    Log.d(TAG,"name:" + device.getName() + ",uuid:"
+                    	  + device.getUuids() + ",add:”
+                    	  + device.getAddress() + ",type:”
+                    	  + device.getType() + ",bondState:”
+                    	  + device.getBondState() + ",rssi:” + result.getRssi());
+        // fazer as tarefas
+    }
 };
+
+// inicia a procura
 MiBand.startScan(scanCallback);
 
-// 停止扫描
+// para a procura
 MiBand.stopScan(scanCallback);
 
-// 连接, 指定刚才扫描到的设备中的一个
+```
+
+### Conectar em um disipotivos
+
+```java
+// Conecta no dispositivo, só assim é possível enviar comandos.
 miband.connect(device, new ActionCallback() {
-						
-	@Override
-	public void onSuccess(Object data)
-	{
-		Log.d(TAG,"connect success");
-	}
-	
-	@Override
-	public void onFail(int errorCode, String msg)
-	{
-		Log.d(TAG,"connect fail, code:"+errorCode+",mgs:"+msg);
-	}
+    @Override
+    public void onSuccess(Object data){
+        Log.d(TAG,"connect success");
+    }
+    @Override
+    public void onFail(int errorCode, String msg){
+        Log.d(TAG,"connect fail, code:"+errorCode+",mgs:"+msg);
+    }
 });
 
-// 设置断开监听器, 方便在设备断开的时候进行重连或者别的处理
-miband.setDisconnectedListener(new NotifyListener()
-{
-	@Override
-	public void onNotify(byte[] data)
-	{
-		Log.d(TAG,
-				“连接断开!!!”);
+
+
+// defini um listener para quando descobectar do dispositivo
+miband.setDisconnectedListener(new NotifyListener(){
+    @Override
+    public void onNotify(byte[] data){
+         Log.d(TAG,"Desconectou!!!”);
 	}
 });
+		
+```
 
-// 设置UserInfo, 心跳检测之前必须设置
-// 当最后一个参数Type 为 1, 每次手环都会闪烁并震动, 这个时候, 需要拍一下手环, 以确认配对; 就像官方app 配对时一样
-// 当 Type为0, 只有当设置的 userid 跟之前设置的不一样时, 才需要确认配对;
-// 当 Type为0, 且 设置的 userid 跟之前一样时 手环无反应; 会在normal notify 收到一个值为3的通知
+### Defini dados do usuário
 
+```java
+// Defini dados do usuário
 UserInfo userInfo = new UserInfo(20111111, 1, 32, 180, 55, "胖梁", 0);
 miband.setUserInfo(userInfo);
 
-// 设置心跳扫描结果通知
-miband.setHeartRateScanListener(new HeartRateNotifyListener()
-{
-	@Override
-	public void onNotify(int heartRate)
-	{
-		Log.d(TAG, "heart rate: "+ heartRate);
-	}
+```
+
+### Solicita dados de batimentos cardiácos
+
+```java
+// defini listener
+miband.setHeartRateScanListener(new HeartRateNotifyListener(){
+    @Override
+    public void onNotify(int heartRate){
+        Log.d(TAG, "heart rate: "+ heartRate);
+    }
 });
 
-//开始心跳扫描
+// inicia escaneamento, quando pronto, o listener será chamado
 miband.startHeartRateScan();
 
-// 读取和连接设备的信号强度Rssi值
+```
+
+### Sinal do RSSI
+
+```java
+
+// 
 miband.readRssi(new ActionCallback() {
-		
-	@Override
-	public void onSuccess(Object data)
-	{
-		Log.d(TAG, "rssi:"+(int)data);
-	}
-	
-	@Override
-	public void onFail(int errorCode, String msg)
-	{
-		Log.d(TAG, "readRssi fail");
-	}
+    @Override
+    public void onSuccess(Object data){
+        Log.d(TAG, "rssi:"+(int)data);
+    }
+    @Override
+    public void onFail(int errorCode, String msg){
+        Log.d(TAG, "readRssi fail");
+    }
 });
 
-// 读取手环电池信息
-miband.getBatteryInfo(new ActionCallback() {
-		
-	@Override
-	public void onSuccess(Object data)
-	{
-		BatteryInfo info = (BatteryInfo)data;
-		Log.d(TAG, info.toString());
-		//cycles:4,level:44,status:unknow,last:2015-04-15 03:37:55
-	}
-	
-	@Override
-	public void onFail(int errorCode, String msg)
-	{
-		Log.d(TAG, "readRssi fail");
-	}
+```
+
+### Informações da bateria
+
+```java
+
+// requisita informações da bateria
+miband.getBatteryInfo(new ActionCallback() {	
+    @Override
+    public void onSuccess(Object data){
+        BatteryInfo info = (BatteryInfo)data;
+        Log.d(TAG, info.toString());
+        //cycles:4,level:44,status:unknow,last:2015-04-15 03:37:55
+    }
+    @Override
+    public void onFail(int errorCode, String msg){
+        Log.d(TAG, "readRssi fail");
+    }
 });
 
-//震动2次， 三颗led亮
+```
+
+### Notificações
+
+```java
+
+//vibra 2 vezes com led/tela ativa
 miband.startVibration(VibrationMode.VIBRATION_WITH_LED);
 
-//震动2次, 没有led亮
+//vibra 2 vezes sem led/icone inativa
 miband.startVibration(VibrationMode.VIBRATION_WITHOUT_LED);
 
-//震动10次, 中间led亮蓝色
+//vibra 10 vezes com led/tela ativa
 miband.startVibration(VibrationMode.VIBRATION_10_TIMES_WITH_LED);
 
-//停止震动, 震动时随时调用都可以停止
+//para a vibração a qualquer momento
 miband.stopVibration();
 
-//获取普通通知, data一般len=1, 值为通知类型, 类型暂未收集
+//listener de notificação geral
 miband.setNormalNotifyListener(new NotifyListener() {
-		
-	@Override
-	public void onNotify(byte[] data)
-	{
-		Log.d(TAG, "NormalNotifyListener:" + Arrays.toString(data));
-	}
+    @Override
+    public void onNotify(byte[] data){
+        Log.d(TAG, "NormalNotifyListener:" + Arrays.toString(data));
+    }
 });
 
-// 获取实时步数通知, 设置好后, 摇晃手环(需要持续摇动10-20下才会触发), 会实时收到当天总步数通知
-// 使用分两步:
-// 1.设置监听器
+```
 
-miband.setRealtimeStepsNotifyListener(new RealtimeStepsNotifyListener() {
-		
-	@Override
-	public void onNotify(int steps)
-	{
-		Log.d(TAG, "RealtimeStepsNotifyListener:" + steps);
-	}
+```java
+
+// Obter notificação de número de passos em tempo real, configurar, 
+// agitar a pulseira (precisa continuar a agitar 10-20),
+// receberá notificação em tempo real do número total de etapas 
+// Use duas etapas: 
+
+// 1. Configuração de monitoramento Dispositivo
+miband.setRealtimeStepsNotifyListener(new RealtimeStepsNotifyListener() {	
+    @Override
+    public void onNotify(int steps){
+        Log.d(TAG, "RealtimeStepsNotifyListener:" + steps);
+    }
 });
 
-// 2.开启通知
+// 2. Ligue a notificação 
 miband.enableRealtimeStepsNotify();
 
-//关闭(暂停)实时步数通知, 再次开启只需要再次调用miband.enableRealtimeStepsNotify()即可
+// desligar (pausa) notificação de passos em tempo real, 
+// para ativar novamente, chame miband.enableRealtimeStepsNotify() 
 miband.disableRealtimeStepsNotify();
 
-//设置led颜色, 橙, 蓝, 红, 绿
+```
+
+### Iliminação dos LED's (MiBand 1)'
+
+```java
+//cor dos leds
 miband.setLedColor(LedColor.ORANGE);
 miband.setLedColor(LedColor.BLUE);
 miband.setLedColor(LedColor.RED);
 miband.setLedColor(LedColor.GREEN);
+```
 
-// 获取重力感应器原始数据, 需要两步
-// 1. 设置监听器
-miband.setSensorDataNotifyListener(new NotifyListener()
-{
-	@Override
-	public void onNotify(byte[] data)
-	{
-		int i = 0;
+### Acelerômetro
 
-		int index = (data[i++] & 0xFF) | (data[i++] & 0xFF) << 8;  // 序号
-		int d1 = (data[i++] & 0xFF) | (data[i++] & 0xFF) << 8;    
-		int d2 = (data[i++] & 0xFF) | (data[i++] & 0xFF) << 8;
-		int d3 = (data[i++] & 0xFF) | (data[i++] & 0xFF) << 8;
+```java
+// Para obter os dados brutos do sensor de gravidade (acelerometro), faça em dois passos 
+// 1. Defina o listener
+miband.setSensorDataNotifyListener(new NotifyListener(){
+    @Override
+    public void onNotify(byte[] data){
+        int i = 0;
 
-	}
+        int index = (data[i++] & 0xFF) | (data[i++] & 0xFF) << 8;  // número
+        int d1 = (data[i++] & 0xFF) | (data[i++] & 0xFF) << 8;    
+        int d2 = (data[i++] & 0xFF) | (data[i++] & 0xFF) << 8;
+        int d3 = (data[i++] & 0xFF) | (data[i++] & 0xFF) << 8;
+    }
 });
 
-// 2. 开启
+// 2. habilite as notificações
 miband.enableSensorDataNotify();
 
-// 配对, 貌似没啥用, 不配对也可以做其他的操作
+```
+
+### Emparelhamento
+    
+Função pouco utilizada, pois não há dados para análise
+
+```java
+// emparelhar
 miband.pair(new ActionCallback() {
-	@Override
-	public void onSuccess(Object data)
-	{
-		changeStatus("pair succ");
-	}
-	
-	@Override
-	public void onFail(int errorCode, String msg)
-	{
-		changeStatus("pair fail");
-	}
+    @Override
+    public void onSuccess(Object data){
+        changeStatus("pair succ");
+    }
+    @Override
+    public void onFail(int errorCode, String msg){
+        changeStatus("pair fail");
+    }
 });
 
 ```

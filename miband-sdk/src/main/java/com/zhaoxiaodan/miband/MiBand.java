@@ -78,7 +78,7 @@ public class MiBand {
     /**
      * 和手环配对, 实际用途未知, 不配对也可以做其他的操作
      *
-     * @return data = null
+     * return data = null
      */
     public void pair(final ActionCallback callback) {
         ActionCallback ioCallback = new ActionCallback() {
@@ -109,8 +109,8 @@ public class MiBand {
     /**
      * 读取和连接设备的信号强度RSSI值
      *
-     * @param callback
-     * @return data : int, rssi值
+     * param callback
+     * eturn data : int, rssi值
      */
     public void readRssi(ActionCallback callback) {
         this.io.readRssi(callback);
@@ -119,7 +119,7 @@ public class MiBand {
     /**
      * 读取手环电池信息
      *
-     * @return {@link BatteryInfo}
+     * return {@link BatteryInfo}
      */
     public void getBatteryInfo(final ActionCallback callback) {
         ActionCallback ioCallback = new ActionCallback() {
@@ -178,7 +178,7 @@ public class MiBand {
 
     /**
      * 重力感应器数据通知监听, 设置完之后需要另外使用 {@link MiBand#enableRealtimeStepsNotify} 开启 和
-     * {@link MiBand##disableRealtimeStepsNotify} 关闭通知
+     *
      *
      * @param listener
      */
@@ -208,7 +208,7 @@ public class MiBand {
 
     /**
      * 实时步数通知监听器, 设置完之后需要另外使用 {@link MiBand#enableRealtimeStepsNotify} 开启 和
-     * {@link MiBand##disableRealtimeStepsNotify} 关闭通知
+     *
      *
      * @param listener
      */
