@@ -19,6 +19,10 @@ public class Profile {
      */
     public static final UUID UUID_SERVICE_HEARTRATE = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");
 
+    public static final UUID UUID_BUTTON_TOUCH = UUID.fromString("00000010-0000-3512-2118-0009af100700");
+
+    public static final UUID UUID_SERVICE_MIBAND2_SERVICE = UUID.fromString("0000fee1-0000-1000-8000-00805f9b34fb");
+
 
     /**
      * 未知作用

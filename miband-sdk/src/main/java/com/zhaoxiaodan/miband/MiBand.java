@@ -307,4 +307,8 @@ public class MiBand {
         MiBand.this.io.writeCharacteristic(Profile.UUID_SERVICE_HEARTRATE, Profile.UUID_CHAR_HEARTRATE, Protocol.START_HEART_RATE_SCAN, null);
     }
 
+    public void setOnButtonPress(NotifyListener notifyListener){
+        this.io.setNotifyListener(Profile.UUID_SERVICE_MIBAND2_SERVICE, Profile.UUID_BUTTON_TOUCH, notifyListener);
+    }
+
 }
